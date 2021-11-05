@@ -1,125 +1,218 @@
-import sys
+import json
 import traceback
-import re
-import mwparserfromhell as mw
+from typing import Dict
+
 import api
+import mwparserfromhell as mw
+
 import util
-from typing import *
-import urllib.request
 
-"this isn't quite right, because 2h, but the format isn't smart enough for that"
-slotIDs: Dict[str, int] = {
-	"weapon": 3,
-	"2h": 3,
-	"body": 4,
-	"head": 0,
-	"ammo": 13,
-	"legs": 7,
-	"feet": 10,
-	"hands": 9,
-	"cape": 1,
-	"neck": 2,
-	"ring": 12,
-	"shield": 5
-}
+output_dir = "output/"
 
-def getLimits():
-	req = urllib.request.Request(
-		'https://oldschool.runescape.wiki/w/Module:GELimits/data?action=raw', headers=api.user_agent)
-	with urllib.request.urlopen(req) as response:
-		data = response.read()
-	limits = {}
-	for line in data.splitlines():
-		match = re.search(r"\[\"(.*)\"\] = (\d+),?", str(line))
-		if match:
-			name = match.group(1).replace('\\', '')
-			limit = match.group(2)
-			limits[name] = int(limit)
-	return limits
+
+def get_production():
+    item_production = api.ask_category_production("Items")
+    name = "items-production.json"
+    min_name = "items-production.min.json"
+
+    with open(output_dir + name, "w+") as fi:
+        json.dump(item_production, fi, indent=2)
+
+    with open(output_dir + min_name, "w+") as fi:
+        json.dump(item_production, fi, separators=(",", ":"))
+
+
+def get_shop_items():
+    file_name = "items-shopitems.json"
+    min_name = "items-shopitems.min.json"
+
+    page_data = api.query_category("Shops")
+    page_data.update(api.query_category("Merchants"))
+
+    shop_items = []
+    for name, page in page_data.items():
+        if name.startswith("Category:"):
+            continue
+
+        try:
+            items = []
+            code = mw.parse(page, skip_style_tags=True)
+            store_infobox = code.filter_templates(matches=lambda t: t.name.matches("Infobox Shop"))
+
+            if len(store_infobox) < 1:
+                store_infobox = code.filter_templates(matches=lambda t: t.name.matches("Infobox NPC"))
+                if len(store_infobox) < 1:
+                    continue
+
+            infobox_data: Dict[str, str] = {}
+            for param in store_infobox[0].params:
+                infobox_data[param.name.strip()] = param.value.strip()
+
+            store_table_head = code.filter_templates(matches=lambda t: t.name.matches("StoreTableHead"))
+            store_lines = code.filter_templates(matches=lambda t: t.name.matches("StoreLine"))
+            if len(store_table_head) < 1 or len(store_lines) < 1:
+                continue
+
+            store_table_data: Dict[str, str] = {}
+            for param in store_table_head[0].params:
+                store_table_data[param.name.strip()] = param.value.strip()
+
+            if "smw" in store_table_data:
+                if store_table_data["smw"].lower() == "no":
+                    continue
+
+            for store_line in store_lines:
+                store_line_data: Dict[str, str] = {}
+                for param in store_line.params:
+                    store_line_data[param.name.strip()] = param.value.strip()
+                if "smw" in store_line_data:
+                    if store_line_data["smw"].lower() == "no":
+                        continue
+
+                shop_item = {
+                    "name": store_line_data["name"],
+                    "stock": store_line_data["stock"],
+                    "currency": store_table_data["currency"] if "currency" in store_table_data else "Coins"
+                }
+                if "sell" in store_line_data:
+                    shop_item["sellPrice"] = store_line_data["sell"]
+                if "buy" in store_line_data:
+                    shop_item["buyPrice"] = store_line_data["buy"]
+                items.append(shop_item)
+
+            shop_info = {
+                "name": name,
+                "location": infobox_data["location"].replace("[", "").replace("]",
+                                                                              "") if "location" in infobox_data else "",
+                "isMembers": True if ("members" in infobox_data and infobox_data["members"] == "Yes") else False,
+                "items": items
+            }
+            if "sellmultiplier" in store_table_data:
+                shop_info["sellMultiplier"] = store_table_data["sellmultiplier"]
+            if "buymultiplier" in store_table_data:
+                shop_info["buyMultiplier"] = store_table_data["buymultiplier"]
+
+            shop_items.append(shop_info)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Item {} failed:".format(name))
+            traceback.print_exc()
+
+    with open(output_dir + file_name, "w+") as fi:
+        json.dump(shop_items, fi, indent=2, sort_keys=True)
+
+    with open(output_dir + min_name, "w+") as fi:
+        json.dump(shop_items, fi, separators=(",", ":"), sort_keys=True)
+
+
+def get_item_spawns():
+    item_pages = api.query_category("Items")
+    file_name = "items-spawns.json"
+    min_name = "items-spawns.min.json"
+
+    item_spawns = []
+    for name, page in item_pages.items():
+        if ":" in name:
+            continue
+
+        try:
+            code = mw.parse(page, skip_style_tags=True)
+            raw_page_spawns = code.filter_templates(matches=lambda t: t.name.matches("ItemSpawnLine"))
+            if len(raw_page_spawns) < 1:
+                continue
+            page_spawns = {
+                "group": name,
+                "spawns": []
+            }
+            for raw_page_spawn in raw_page_spawns:
+                base: Dict[str, str] = {}
+                for param in raw_page_spawn.params:
+                    base[param.name.strip()] = param.value.strip()
+
+                coords = "?"
+                if "1" in base:
+                    coords = ""
+                    coord_list = base["1"].split(",")
+                    for item in coord_list:
+                        if ":" not in item:
+                            coords += item + ","
+                    coords = coords[:-1]
+
+                page_spawn = {
+                    "name": base["name"],
+                    "location": base["location"].replace("[", "").replace("]", ""),
+                    "isMembers": True if base["members"] == "Yes" else False,
+                    "coords": coords
+                }
+                page_spawns["spawns"].append(page_spawn)
+
+            item_spawns.append(page_spawns)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Item {} failed:".format(name))
+            traceback.print_exc()
+
+    with open(output_dir + file_name, "w+") as fi:
+        json.dump(item_spawns, fi, indent=2, sort_keys=True)
+
+    with open(output_dir + min_name, "w+") as fi:
+        json.dump(item_spawns, fi, separators=(",", ":"), sort_keys=True)
+
+
+def get_item_info():
+    item_pages = api.query_category("Items")
+    file_name = "items-info.json"
+    min_name = "items-info.min.json"
+
+    item_info = []
+    for name, page in item_pages.items():
+        if ":" in name:
+            continue
+
+        # if name != "Absorption":
+        #     continue
+
+        try:
+            code = mw.parse(page, skip_style_tags=True)
+
+            for (vid, version) in util.each_version("Infobox Item", code, include_base=True):
+                if vid == -1:
+                    continue
+
+                base: Dict[str, str] = {}
+                for param, value in version.items():
+                    base[param.strip()] = value.strip()
+
+                obj = {
+                    "name": base["name"],
+                    "group": name,
+                    "isMembers": True if base["members"] == "Yes" else False,
+                    "isTradeable": True if base["tradeable"] == "Yes" else False,
+                    "examineText": base["examine"],
+                    "itemID": base["id"]
+                }
+
+                item_info.append(obj)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Item {} failed:".format(name))
+            traceback.print_exc()
+
+    with open(output_dir + file_name, "w+") as fi:
+        json.dump(item_info, fi, indent=2, sort_keys=True)
+
+    with open(output_dir + min_name, "w+") as fi:
+        json.dump(item_info, fi, separators=(",", ":"), sort_keys=True)
 
 
 def run():
-	limits = getLimits()
-	stats = {}
-
-	item_pages = api.query_category("Items")
-	for name, page in item_pages.items():
-		if name.startswith("Category:"):
-			continue
-
-		try:
-			code = mw.parse(page, skip_style_tags=True)
-
-			equips = {}
-			for (vid, version) in util.each_version("Infobox Bonuses", code, include_base=True):
-				doc = {}
-				equips[vid] = doc
-
-				if "slot" in version:
-					slotID = str(version["slot"]).strip().lower()
-					if slotID in slotIDs:
-						doc["slot"] = slotIDs[slotID]
-						if slotID == "2h":
-							doc["is2h"] = True
-					elif slotID != "?":
-						print("Item {} has unknown slot {}".format(name, slotID))
-
-				for key in [
-					"astab", "aslash", "acrush", "amagic", "arange", "dstab", "dslash", "dcrush", "dmagic", "drange", "str",
-					"rstr", "mdmg", "prayer", ("speed", "aspeed")
-				]:
-					try:
-						util.copy(key, doc, version, lambda x: int(x))
-					except ValueError:
-						print("Item {} has an non integer {}".format(name, key))
-
-			for (vid, version) in util.each_version("Infobox Item", code, mergable_keys=None if len(equips) <= 1 else []):
-				if "removal" in version and not str(version["removal"]).strip().lower() in ["", "no", "n/a"]:
-					continue
-
-				doc = util.get_doc_for_id_string(name + str(vid), version, stats)
-				if doc == None:
-					continue
-
-				util.copy("name", doc, version)
-				if not "name" in doc:
-					doc["name"] = name
-
-				equipable = "equipable" in version and "yes" in str(version["equipable"]).strip().lower()
-
-				if "weight" in version:
-					strval = str(version["weight"]).strip()
-					if strval.endswith("kg"):
-						strval = strval[:-2].strip()
-					if strval != "":
-						floatval = float(strval)
-						if floatval != 0:
-							doc["weight"] = floatval
-
-				equipVid = vid if vid in equips else -1 if -1 in equips else None
-				if equipVid != None:
-					if equipable or not "broken" in version["name"].lower():
-						if not equipable:
-							print("Item {} has Infobox Bonuses but not equipable".format(name))
-						doc["equipable"] = True
-						doc["equipment"] = equips[equipVid]
-				elif equipable:
-					print("Item {} has equipable but not Infobox Bonuses".format(name))
-					doc["equipable"] = True
-					doc["equipment"] = {}
-
-				itemName = name
-				if "gemwname" in version:
-					itemName = str(version["gemwname"]).strip()
-				elif "name" in version:
-					itemName = str(version["name"]).strip()
-				if itemName in limits:
-					doc['ge_limit'] = limits[itemName]
-
-		except (KeyboardInterrupt, SystemExit):
-			raise
-		except:
-			print("Item {} failed:".format(name))
-			traceback.print_exc()
-
-	util.write_json("stats.json", "stats.ids.min.json", stats)
+    get_production()
+    get_item_spawns()
+    get_shop_items()
+    get_item_info()

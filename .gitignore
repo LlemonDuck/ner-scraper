@@ -6,3 +6,6 @@ stats.json
 npcs.json
 npcs.min.json
 __pycache__
+tests.py
+.idea
+.ropeproject
