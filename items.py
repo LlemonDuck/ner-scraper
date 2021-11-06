@@ -179,15 +179,20 @@ def get_item_info():
         try:
             code = mw.parse(page, skip_style_tags=True)
 
+            versions = {}
+
             for (vid, version) in util.each_version("Infobox Item", code, include_base=True):
-                if vid == -1:
+                versions[vid] = version
+
+            for (vid, version) in versions.items():
+                if len(versions) > 1 and vid == -1:
                     continue
 
                 base: Dict[str, str] = {}
                 for param, value in version.items():
                     base[param.strip()] = value.strip()
 
-                if "removal" in base:
+                if "hist" in base["id"] or "beta" in base["id"] or base["name"].lower() == "null":
                     continue
 
                 item_id = int(base["id"].split(",")[0])
