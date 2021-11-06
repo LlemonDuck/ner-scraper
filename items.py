@@ -187,13 +187,18 @@ def get_item_info():
                 for param, value in version.items():
                     base[param.strip()] = value.strip()
 
+                if "removal" in base:
+                    continue
+
+                item_id = int(base["id"].split(",")[0])
+
                 obj = {
                     "name": base["name"],
                     "group": name,
                     "isMembers": True if base["members"] == "Yes" else False,
                     "isTradeable": True if base["tradeable"] == "Yes" else False,
                     "examineText": base["examine"],
-                    "itemID": base["id"]
+                    "itemID": item_id
                 }
 
                 item_info.append(obj)
