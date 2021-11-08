@@ -1,8 +1,12 @@
 import os
 import json
+import mwparserfromhell as mw
+import traceback
 import urllib.request
 import urllib.parse
 from typing import *
+
+import util
 
 use_cache: bool = True
 user_agent: dict[str, str] = {"User-Agent": "Not Enough Runes Scraper/1.0 (+HannahRyanster@gmail.com)"}
@@ -111,3 +115,55 @@ def ask_category_production(category_name: str) -> List[str]:
         json.dump(items, fi)
 
     return items
+
+
+def ask_category_drop_sources(category_name: str) -> Dict[str, object]:
+    """
+    ask_category_shop_items returns a list of all Production JSON
+    properties in a given category
+    """
+    cache_file_name = category_name + "-drop-sources" + ".cache.json"
+    if use_cache and os.path.isfile(cache_file_name):
+        with open(cache_file_name, "r") as fi:
+            return json.load(fi)
+
+    item_pages = query_category(category_name)
+    items = []
+    drop_items = {}
+    for name, page in item_pages.items():
+        if name.startswith("Category:") or name == "<!--None-->" or name.lower() == "null":
+            continue
+
+        try:
+            code = mw.parse(page, skip_style_tags=True)
+
+            for (vid, version) in util.each_version("Infobox Item", code):
+                items.append(version["name"].strip())
+                drop_items[version["name"].strip()] = {"results": []}
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Item {} failed:".format(name))
+            traceback.print_exc()
+
+
+    for i in range(0, len(items), 15):
+        items_string = "||".join(items[i:i + 15])
+        query = "[[Dropped item text::" + items_string + "]]|?Dropped item text|?Quantity High|?Quantity Low|?Rarity|?Drop level|?Drop type"
+
+        for res in get_wiki_ask_api(
+                {
+                    "action": "ask",
+                    "query": query
+                }):
+
+            for item in res["query"]["results"]:
+                result = res["query"]["results"][item]
+                drop_items[result["printouts"]["Dropped item text"][0]]["results"].append(result)
+
+    with open(cache_file_name, "w+") as fi:
+        json.dump(drop_items, fi)
+
+    return drop_items
+

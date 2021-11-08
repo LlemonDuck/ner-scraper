@@ -1,4 +1,6 @@
+import hashlib
 import json
+import os
 import traceback
 from typing import Dict
 
@@ -101,10 +103,10 @@ def get_shop_items():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(shop_items, fi, indent=2, sort_keys=True)
+        json.dump(shop_items, fi, indent=2)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(shop_items, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(shop_items, fi, separators=(",", ":"))
 
 
 def get_item_spawns():
@@ -157,10 +159,10 @@ def get_item_spawns():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_spawns, fi, indent=2, sort_keys=True)
+        json.dump(item_spawns, fi, indent=2)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_spawns, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(item_spawns, fi, separators=(",", ":"))
 
 
 def get_item_info():
@@ -172,9 +174,6 @@ def get_item_info():
     for name, page in item_pages.items():
         if ":" in name:
             continue
-
-        # if name != "Absorption":
-        #     continue
 
         try:
             code = mw.parse(page, skip_style_tags=True)
@@ -215,10 +214,76 @@ def get_item_info():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_info, fi, indent=2, sort_keys=True)
+        json.dump(item_info, fi, indent=2)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_info, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(item_info, fi, separators=(",", ":"))
+
+
+def get_item_drops():
+    file_name = "items-drop-sources.json"
+    min_name = "items-drop-sources.min.json"
+    temp_item_drops = api.ask_category_drop_sources("Items")
+
+    item_drops = []
+    for name, results in temp_item_drops.items():
+        if len(results["results"]) < 1:
+            continue
+
+        drop_object = {
+            "name": name,
+            "dropSources": []
+        }
+
+        try:
+            for result in results["results"]:
+                result_object = {
+                    "source": result["fulltext"].split("#")[0],
+                    "quantityLow": result["printouts"]["Quantity Low"][0] if len(result["printouts"]["Quantity Low"]) > 0 else -1,
+                    "quantityHigh": result["printouts"]["Quantity High"][0] if len(result["printouts"]["Quantity High"]) > 0 else -1,
+                    "rarity": result["printouts"]["Rarity"][0] if len(result["printouts"]["Rarity"]) > 0 else "Unknown",
+                    "dropLevel": result["printouts"]["Drop level"][0] if len(result["printouts"]["Drop level"]) > 0 else "",
+                    "dropType": result["printouts"]["Drop type"][0] if len(result["printouts"]["Drop type"]) > 0 else ""
+                }
+                drop_object["dropSources"].append(result_object)
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Item {} failed:".format(name))
+            traceback.print_exc()
+
+        item_drops.append(drop_object)
+
+    with open(output_dir + file_name, "w+") as fi:
+        json.dump(item_drops, fi, indent=2)
+
+    with open(output_dir + min_name, "w+") as fi:
+        json.dump(item_drops, fi, separators=(",", ":"))
+
+
+def generate_hashes():
+    path = os.getcwd() + "\output"
+    BLOCKSIZE = 65536
+    checksums = {}
+    for file_name in os.listdir(path):
+        file_path = os.path.join(path, file_name)
+        if os.path.isfile(file_path):
+            if "min" not in file_name or file_name == "checksums":
+                continue
+
+            hasher = hashlib.sha256()
+            with open(file_path, 'rb') as afile:
+                buf = afile.read(BLOCKSIZE)
+                while len(buf) > 0:
+                    hasher.update(buf)
+                    buf = afile.read(BLOCKSIZE)
+
+            checksum = hasher.hexdigest()
+            checksums[file_name] = checksum
+
+    with open(output_dir + "checksums", "w+") as fi:
+        json.dump(checksums, fi, indent=2)
 
 
 def run():
@@ -226,3 +291,5 @@ def run():
     get_item_spawns()
     get_shop_items()
     get_item_info()
+    get_item_drops()
+    generate_hashes()
