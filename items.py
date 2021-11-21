@@ -19,10 +19,10 @@ def get_production():
     min_name = "items-production.min.json"
 
     with open(output_dir + name, "w+") as fi:
-        json.dump(item_production, fi, indent=2)
+        json.dump(item_production, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_production, fi, separators=(",", ":"))
+        json.dump(item_production, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_shop_items():
@@ -103,10 +103,10 @@ def get_shop_items():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(shop_items, fi, indent=2)
+        json.dump(shop_items, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(shop_items, fi, separators=(",", ":"))
+        json.dump(shop_items, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_spawns():
@@ -159,10 +159,10 @@ def get_item_spawns():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_spawns, fi, indent=2)
+        json.dump(item_spawns, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_spawns, fi, separators=(",", ":"))
+        json.dump(item_spawns, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_info():
@@ -201,7 +201,7 @@ def get_item_info():
                     "group": name,
                     "isMembers": True if base["members"] == "Yes" else False,
                     "isTradeable": True if base["tradeable"] == "Yes" else False,
-                    "examineText": base["examine"],
+                    "examineText": base["examine"] if "examine" in base else "",
                     "itemID": item_id
                 }
 
@@ -214,10 +214,10 @@ def get_item_info():
             traceback.print_exc()
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_info, fi, indent=2)
+        json.dump(item_info, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_info, fi, separators=(",", ":"))
+        json.dump(item_info, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_drops():
@@ -256,10 +256,10 @@ def get_item_drops():
         item_drops.append(drop_object)
 
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_drops, fi, indent=2)
+        json.dump(item_drops, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_drops, fi, separators=(",", ":"))
+        json.dump(item_drops, fi, separators=(",", ":"), sort_keys=True)
 
 
 def generate_hashes():
@@ -283,11 +283,10 @@ def generate_hashes():
             checksums[file_name] = checksum
 
     with open(output_dir + "checksums", "w+") as fi:
-        json.dump(checksums, fi, indent=2)
+        json.dump(checksums, fi, indent=2, sort_keys=True)
 
 
 def format_location(location):
-    print(location)
     floor_values = {
         0: "ground floor",
         1: "1st floor",
