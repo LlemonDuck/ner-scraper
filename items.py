@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import traceback
 from typing import Dict
 
@@ -84,8 +85,7 @@ def get_shop_items():
 
             shop_info = {
                 "name": name,
-                "location": infobox_data["location"].replace("[", "").replace("]",
-                                                                              "") if "location" in infobox_data else "",
+                "location": format_location(infobox_data["location"]) if "location" in infobox_data else "",
                 "isMembers": True if ("members" in infobox_data and infobox_data["members"] == "Yes") else False,
                 "items": items
             }
@@ -144,7 +144,7 @@ def get_item_spawns():
 
                 page_spawn = {
                     "name": base["name"],
-                    "location": base["location"].replace("[", "").replace("]", ""),
+                    "location": format_location(base["location"]),
                     "isMembers": True if base["members"] == "Yes" else False,
                     "coords": coords
                 }
@@ -284,6 +284,35 @@ def generate_hashes():
 
     with open(output_dir + "checksums", "w+") as fi:
         json.dump(checksums, fi, indent=2)
+
+
+def format_location(location):
+    print(location)
+    floor_values = {
+        0: "ground floor",
+        1: "1st floor",
+        2: "2nd floor",
+        3: "3rd floor",  # current highest floor
+        4: "4th floor",
+        5: "5th floor"
+    }
+    bracket_regex = r"(?<=\[\[).*?(?=\]\])"
+    bracket_matches = re.finditer(bracket_regex, location, re.MULTILINE)
+    for matchNum, match in enumerate(bracket_matches, start=1):
+        parts = match.group().split("|")
+        if len(parts) > 1:
+            part = parts[1]
+        else:
+            part = parts[0]
+        location = location.replace(match.group(), part).replace("[", "").replace("]", "")
+
+    brace_regex = r"(\{\{).*?(\d+)(\}\})"
+    brace_matches = re.finditer(brace_regex, location, re.MULTILINE)
+    for matchNum, match in enumerate(brace_matches, start=1):
+        floor = int(match.group(2))
+        location = location.replace(match.group(), floor_values.get(floor))
+
+    return location
 
 
 def run():
