@@ -1,7 +1,7 @@
 {
-  "items-drop-sources.min.json": "56066edcc233de1d9985f82ddeb2f53c928a4862d41212e1c0351bd81219a8f9",
-  "items-info.min.json": "0584d12721d21e41b76336ddc0f0ee1abb60dc709ace39bb564a7f650a1ee246",
-  "items-production.min.json": "86c617afdfbbea89c909fb70857a195ffe2b618bb99338c03e06b9bad1814e35",
-  "items-shopitems.min.json": "16c0be461545ac0afb18dbfe15c39f2fe916f12bd49b7fc0effd73b44ab47428",
-  "items-spawns.min.json": "cbc6a89ce96f3ff186c3b12b8e450d0eaa3ed0378a73145b1cdb3292e6987b5e"
+  "items-drop-sources.min.json": "95f6f453eece899ab1e34959c597a8e15bc4489eb66a90e92992e23bc84976e8",
+  "items-info.min.json": "544146c1143b11ae728026c06f23b11ab2c2c4b641ce1f0b2ec05a92be4bde71",
+  "items-production.min.json": "a40c4506db1b4b0150f754ea1c7e53f2b33b73ca4bb74b72572a1f9fd66bc6a5",
+  "items-shopitems.min.json": "218706b951bd496cace90e675111cc96a6e82fbfb528949bcafd5140f19b1f72",
+  "items-spawns.min.json": "72fc321b6f6cfe94416a6fe0387f4c0ae761cb962a6d177eed438b51f6b71c79"
 }

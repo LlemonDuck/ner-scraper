@@ -2209,7 +2209,7 @@
       },
       {
         "coords": "3076,3845",
-        "isMembers": true,
+        "isMembers": false,
         "location": "Wilderness - Lava Maze",
         "name": "Coins"
       },
@@ -2893,17 +2893,6 @@
     ]
   },
   {
-    "group": "Glassblowing book",
-    "spawns": [
-      {
-        "coords": "2438,3185",
-        "isMembers": true,
-        "location": "Observatory - reception area",
-        "name": "Glassblowing book"
-      }
-    ]
-  },
-  {
     "group": "Gold bar",
     "spawns": [
       {
@@ -2934,6 +2923,17 @@
         "isMembers": true,
         "location": "Entrana - house west of furnace",
         "name": "Glassblowing pipe"
+      }
+    ]
+  },
+  {
+    "group": "Glassblowing book",
+    "spawns": [
+      {
+        "coords": "2438,3185",
+        "isMembers": true,
+        "location": "Observatory - reception area",
+        "name": "Glassblowing book"
       }
     ]
   },
@@ -3075,17 +3075,6 @@
     ]
   },
   {
-    "group": "Guide book",
-    "spawns": [
-      {
-        "coords": "2638,3292",
-        "isMembers": true,
-        "location": "East Ardougne - estate agent",
-        "name": "Guide Book"
-      }
-    ]
-  },
-  {
     "group": "Haemalchemy volume 1",
     "spawns": [
       {
@@ -3093,6 +3082,17 @@
         "isMembers": true,
         "location": "Meiyerditch Laboratories",
         "name": "Haemalchemy volume 1"
+      }
+    ]
+  },
+  {
+    "group": "Guide book",
+    "spawns": [
+      {
+        "coords": "2638,3292",
+        "isMembers": true,
+        "location": "East Ardougne - estate agent",
+        "name": "Guide Book"
       }
     ]
   },
@@ -3785,6 +3785,12 @@
         "name": "Knife"
       },
       {
+        "coords": "3061,3851",
+        "isMembers": false,
+        "location": "Wilderness - Lava Maze",
+        "name": "Knife"
+      },
+      {
         "coords": "3106,3956",
         "isMembers": true,
         "location": "Wilderness - Mage Arena (after the web).",
@@ -4448,17 +4454,6 @@
     ]
   },
   {
-    "group": "Picture",
-    "spawns": [
-      {
-        "coords": "2576,3334",
-        "isMembers": true,
-        "location": "East Ardougne - Edmond and Alrena's house",
-        "name": "Picture"
-      }
-    ]
-  },
-  {
     "group": "Pie dish",
     "spawns": [
       {
@@ -4507,6 +4502,17 @@
         "isMembers": true,
         "location": "East Ardougne - Jerico's house",
         "name": "Pigeon cage"
+      }
+    ]
+  },
+  {
+    "group": "Picture",
+    "spawns": [
+      {
+        "coords": "2576,3334",
+        "isMembers": true,
+        "location": "East Ardougne - Edmond and Alrena's house",
+        "name": "Picture"
       }
     ]
   },
@@ -5914,17 +5920,6 @@
     ]
   },
   {
-    "group": "Toad batta",
-    "spawns": [
-      {
-        "coords": "3139,4554",
-        "isMembers": true,
-        "location": "Tarn's Lair",
-        "name": "Toad batta"
-      }
-    ]
-  },
-  {
     "group": "Tile",
     "spawns": [
       {
@@ -5989,6 +5984,17 @@
         "isMembers": true,
         "location": "Feldip Hills - east of the gnome glider",
         "name": "Tomato"
+      }
+    ]
+  },
+  {
+    "group": "Toad batta",
+    "spawns": [
+      {
+        "coords": "3139,4554",
+        "isMembers": true,
+        "location": "Tarn's Lair",
+        "name": "Toad batta"
       }
     ]
   },

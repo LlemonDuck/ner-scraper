@@ -11864,6 +11864,11 @@
         "currency": "Coins",
         "name": "Magic stone",
         "stock": "10"
+      },
+      {
+        "currency": "Coins",
+        "name": "Condensed gold",
+        "stock": "10"
       }
     ],
     "location": "Keldagrim",
