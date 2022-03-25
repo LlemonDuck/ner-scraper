@@ -238,12 +238,12 @@ def get_item_drops():
         try:
             for result in results["results"]:
                 result_object = {
-                    "source": result["fulltext"].split("#")[0],
-                    "quantityLow": result["printouts"]["Quantity Low"][0] if len(result["printouts"]["Quantity Low"]) > 0 else -1,
-                    "quantityHigh": result["printouts"]["Quantity High"][0] if len(result["printouts"]["Quantity High"]) > 0 else -1,
-                    "rarity": result["printouts"]["Rarity"][0] if len(result["printouts"]["Rarity"]) > 0 else "Unknown",
-                    "dropLevel": result["printouts"]["Drop level"][0] if len(result["printouts"]["Drop level"]) > 0 else "",
-                    "dropType": result["printouts"]["Drop type"][0] if len(result["printouts"]["Drop type"]) > 0 else ""
+                    "source": result["Dropped from"],
+                    "quantityLow": result["Quantity Low"] if "Quantity Low" in result else -1,
+                    "quantityHigh": result["Quantity High"] if "Quantity High" in result else -1,
+                    "rarity": result["Rarity"] if "Rarity" in result else "Unknown",
+                    "dropLevel": result["Drop level"] if "Drop level" in result else "",
+                    "dropType": result["Drop type"] if "Drop type" in result else ""
                 }
                 drop_object["dropSources"].append(result_object)
 
@@ -315,6 +315,7 @@ def format_location(location):
 
 
 def run():
+    print("running")
     get_production()
     get_item_spawns()
     get_shop_items()

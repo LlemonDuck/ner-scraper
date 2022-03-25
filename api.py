@@ -139,7 +139,7 @@ def ask_category_drop_sources(category_name: str) -> Dict[str, object]:
 
             for (vid, version) in util.each_version("Infobox Item", code):
                 items.append(version["name"].strip())
-                drop_items[version["name"].strip()] = {"results": []}
+
 
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -147,10 +147,9 @@ def ask_category_drop_sources(category_name: str) -> Dict[str, object]:
             print("Item {} failed:".format(name))
             traceback.print_exc()
 
-
     for i in range(0, len(items), 15):
         items_string = "||".join(items[i:i + 15])
-        query = "[[Dropped item text::" + items_string + "]]|?Dropped item text|?Quantity High|?Quantity Low|?Rarity|?Drop level|?Drop type"
+        query = "[[Dropped item::" + items_string + "]]|?Drop JSON|?Dropped item"
 
         for res in get_wiki_ask_api(
                 {
@@ -159,8 +158,12 @@ def ask_category_drop_sources(category_name: str) -> Dict[str, object]:
                 }):
 
             for item in res["query"]["results"]:
-                result = res["query"]["results"][item]
-                drop_items[result["printouts"]["Dropped item text"][0]]["results"].append(result)
+                for drop in res["query"]["results"][item]["printouts"]["Drop JSON"]:
+                    drop_json = json.loads(str(drop))
+                    if drop_json["Dropped item"] in drop_items:
+                        drop_items[drop_json["Dropped item"]]["results"].append(drop_json)
+                    else:
+                        drop_items[drop_json["Dropped item"]] = {"results": [drop_json]}
 
     with open(cache_file_name, "w+") as fi:
         json.dump(drop_items, fi)
