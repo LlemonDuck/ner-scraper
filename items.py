@@ -14,6 +14,7 @@ output_dir = "output/"
 
 
 def get_production():
+    print("Scraping recipes")
     item_production = api.ask_category_production("Items")
     name = "items-production.json"
     min_name = "items-production.min.json"
@@ -26,6 +27,7 @@ def get_production():
 
 
 def get_shop_items():
+    print("Scraping shops")
     file_name = "items-shopitems.json"
     min_name = "items-shopitems.min.json"
 
@@ -110,6 +112,7 @@ def get_shop_items():
 
 
 def get_item_spawns():
+    print("Scraping item spawns")
     item_pages = api.query_category("Items")
     file_name = "items-spawns.json"
     min_name = "items-spawns.min.json"
@@ -167,6 +170,7 @@ def get_item_spawns():
 
 
 def get_item_info():
+    print("Scraping item info")
     item_pages = api.query_category("Items")
     file_name = "items-info.json"
     min_name = "items-info.min.json"
@@ -225,6 +229,7 @@ def get_item_info():
 
 
 def get_item_drops():
+    print("Scraping drops")
     file_name = "items-drop-sources.json"
     min_name = "items-drop-sources.min.json"
     temp_item_drops = api.ask_category_drop_sources("Items")
@@ -267,6 +272,7 @@ def get_item_drops():
 
 
 def generate_hashes():
+    print("Generating checksums")
     path = os.getcwd() + "/output"
     BLOCKSIZE = 65536
     checksums = {}
