@@ -115,7 +115,8 @@ def get_item_spawns():
     min_name = "items-spawns.min.json"
 
     item_spawns = []
-    for name, page in item_pages.items():
+    for name, obj in item_pages.items():
+        page = obj["page"]
         if ":" in name:
             continue
 
@@ -171,7 +172,9 @@ def get_item_info():
     min_name = "items-info.min.json"
 
     item_info = []
-    for name, page in item_pages.items():
+    for name, obj in item_pages.items():
+        page = obj["page"]
+        url = obj["url"]
         if ":" in name:
             continue
 
@@ -202,7 +205,8 @@ def get_item_info():
                     "isMembers": True if base["members"] == "Yes" else False,
                     "isTradeable": True if base["tradeable"] == "Yes" else False,
                     "examineText": base["examine"] if "examine" in base else "",
-                    "itemID": item_id
+                    "itemID": item_id,
+                    "url": url
                 }
 
                 item_info.append(obj)

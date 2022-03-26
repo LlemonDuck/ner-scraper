@@ -2760,17 +2760,6 @@
     ]
   },
   {
-    "group": "Facemask",
-    "spawns": [
-      {
-        "coords": "1617,3680",
-        "isMembers": true,
-        "location": "Kourend Castle - 2nd floor",
-        "name": "Facemask"
-      }
-    ]
-  },
-  {
     "group": "Explosive discovery",
     "spawns": [
       {
@@ -2795,6 +2784,17 @@
         "isMembers": true,
         "location": "Hosidius - Jonathan's house (1st floor) (Telegrab)",
         "name": "Feather"
+      }
+    ]
+  },
+  {
+    "group": "Facemask",
+    "spawns": [
+      {
+        "coords": "1617,3680",
+        "isMembers": true,
+        "location": "Kourend Castle - 2nd floor",
+        "name": "Facemask"
       }
     ]
   },
@@ -3134,17 +3134,6 @@
     ]
   },
   {
-    "group": "Guide book",
-    "spawns": [
-      {
-        "coords": "2638,3292",
-        "isMembers": true,
-        "location": "East Ardougne - estate agent",
-        "name": "Guide Book"
-      }
-    ]
-  },
-  {
     "group": "Haemalchemy volume 1",
     "spawns": [
       {
@@ -3152,6 +3141,17 @@
         "isMembers": true,
         "location": "Meiyerditch Laboratories",
         "name": "Haemalchemy volume 1"
+      }
+    ]
+  },
+  {
+    "group": "Guide book",
+    "spawns": [
+      {
+        "coords": "2638,3292",
+        "isMembers": true,
+        "location": "East Ardougne - estate agent",
+        "name": "Guide Book"
       }
     ]
   },
@@ -4663,7 +4663,7 @@
       {
         "coords": "2846,3384",
         "isMembers": true,
-        "location": "Entrana - near the law altar entrance",
+        "location": "Entrana - near the Law Altar entrance",
         "name": "Plank"
       },
       {

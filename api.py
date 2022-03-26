@@ -49,7 +49,7 @@ def get_wiki_ask_api(args: dict[str, str]) -> Iterator[any]:
             offset += 500
 
 
-def query_category(category_name: str) -> dict[str, str]:
+def query_category(category_name: str) -> dict[str, dict[str, str]]:
     """
     query_category returns a dict of page title to page wikitext
     you can then use mwparserfromhell to parse the wikitext into
@@ -77,12 +77,16 @@ def query_category(category_name: str) -> dict[str, str]:
         for res in get_wiki_api(
                 {
                     "action": "query",
-                    "prop": "revisions",
+                    "prop": "revisions|info",
                     "rvprop": "content",
+                    "inprop": "url",
                     "pageids": "|".join(pageids[i:i + 50]),
                 }, "rvcontinue"):
             for page_id, page in res["query"]["pages"].items():
-                pages[page["title"]] = page["revisions"][0]["*"]
+                pages[page["title"]] = {
+                    "page": page["revisions"][0]["*"],
+                    "url": page["fullurl"]
+                }
 
     with open(cache_file_name, "w+") as fi:
         json.dump(pages, fi)
