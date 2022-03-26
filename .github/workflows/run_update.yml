@@ -4,43 +4,78 @@ on:
   schedule:
     - cron: '21 0 * * fri'
   workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v3
       with:
-        python-version: '3.7'
+        fetch-depth: 0
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pipenv
         pipenv install
-    - name: Run
+    - name: Scrape wiki
       run: |
         pipenv run python main.py
-    - name: Push to srn
-      env:
-        SSH_KEY: ${{ secrets.SRN_KEY }}
+        mv output/checksums output/checksums.bak
+        mv output/items-drop-sources.json output/items-drop-sources.json.bak
+        mv output/items-drop-sources.min.json output/items-drop-sources.min.json.bak
+        mv output/items-info.json output/items-info.json.bak
+        mv output/items-info.min.json output/items-info.min.json.bak
+        mv output/items-production.json output/items-production.json.bak
+        mv output/items-production.min.json output/items-production.min.json.bak
+        mv output/items-shopitems.json output/items-shopitems.json.bak
+        mv output/items-shopitems.min.json output/items-shopitems.min.json.bak
+        mv output/items-spawns.json output/items-spawns.json.bak
+        mv output/items-spawns.min.json output/items-spawns.min.json.bak
+    - name: Copy to target branch
       run: |
-        eval $(ssh-agent)
-        ssh-add <(echo "$SSH_KEY" | base64 -d)
-        mkdir -p ~/.ssh
-        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-        BRANCH_NAME="wiki-data-$(date +"%Y-%m-%d")"
-        mkdir srn
-        cd srn
-        git init
-        git remote add upstream https://github.com/runelite/static.runelite.net.git
-        git remote add origin git@github.com:runelite/static.runelite.net.git
-        git fetch upstream
-        git checkout upstream/gh-pages
-        git checkout -b "$BRANCH_NAME"
-        mkdir -p item npcs
-        cp ../stats{,.ids.min}.json item/
-        cp ../npcs{,.min}.json npcs
-        git add item/stats{,.ids.min}.json
-        git add npcs/npcs{,.min}.json
-        git -c user.name="RuneLite Wiki Scraper" -c user.email="runelite@runelite.net" commit -m "Update wiki data"
-        git push -u origin "$BRANCH_NAME"
+        git checkout --force wiki-data
+        mv output/checksums.bak output/checksums
+        mv output/items-drop-sources.json.bak output/items-drop-sources.json
+        mv output/items-drop-sources.min.json.bak output/items-drop-sources.min.json
+        mv output/items-info.json.bak output/items-info.json
+        mv output/items-info.min.json.bak output/items-info.min.json
+        mv output/items-production.json.bak output/items-production.json
+        mv output/items-production.min.json.bak output/items-production.min.json
+        mv output/items-shopitems.json.bak output/items-shopitems.json
+        mv output/items-shopitems.min.json.bak output/items-shopitems.min.json
+        mv output/items-spawns.json.bak output/items-spawns.json
+        mv output/items-spawns.min.json.bak output/items-spawns.min.json
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+    - uses: hannah-gbs/create-pull-request@v3
+      with:
+        token: ${{ secrets.PAT }}
+        add-paths: |
+          output/checksums
+          output/items-drop-sources.json
+          output/items-drop-sources.min.json
+          output/items-info.json
+          output/items-info.min.json
+          output/items-production.json
+          output/items-production.min.json
+          output/items-shopitems.json
+          output/items-shopitems.min.json
+          output/items-spawns.json
+          output/items-spawns.min.json
+        branch: wiki-data-${{ steps.date.outputs.date }}
+        base: wiki-data
+        title: Wiki scrape data ${{ steps.date.outputs.date }}
+        commit-message: Wiki scrape data ${{ steps.date.outputs.date }}
+        reviewers: Hannah-GBS
+        delete-branch: true
+    - name: Display output PR
+      if: ${{ steps.cpr.outputs.pull-request-number }}
+      run: |
+        echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+        echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
