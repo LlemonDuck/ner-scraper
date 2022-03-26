@@ -53,7 +53,7 @@ jobs:
     - name: Get current date
       id: date
       run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-    - uses: hannah-gbs/create-pull-request@v3
+    - uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.PAT }}
         add-paths: |
