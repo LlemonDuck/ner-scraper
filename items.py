@@ -267,7 +267,7 @@ def get_item_drops():
 
 
 def generate_hashes():
-    path = os.getcwd() + "\output"
+    path = os.getcwd() + "/output"
     BLOCKSIZE = 65536
     checksums = {}
     for file_name in os.listdir(path):
