@@ -11,7 +11,8 @@ def run():
 	npcs = {}
 
 	npc_pages = api.query_category("Monsters")
-	for name, page in npc_pages.items():
+	for name, obj in npc_pages.items():
+		page = obj["page"]
 		if name.startswith("Category:"):
 			continue
 

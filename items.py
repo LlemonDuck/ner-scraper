@@ -35,7 +35,8 @@ def get_shop_items():
     page_data.update(api.query_category("Merchants"))
 
     shop_items = []
-    for name, page in page_data.items():
+    for name, obj in page_data.items():
+        page = obj["page"]
         if name.startswith("Category:"):
             continue
 

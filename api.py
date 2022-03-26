@@ -134,7 +134,8 @@ def ask_category_drop_sources(category_name: str) -> Dict[str, object]:
     item_pages = query_category(category_name)
     items = []
     drop_items = {}
-    for name, page in item_pages.items():
+    for name, obj in item_pages.items():
+        page = obj["page"]
         if name.startswith("Category:") or name == "<!--None-->" or name.lower() == "null":
             continue
 
