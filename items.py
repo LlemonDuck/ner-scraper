@@ -19,6 +19,17 @@ def get_production():
     name = "items-production.json"
     min_name = "items-production.min.json"
 
+    for recipe in item_production:
+        for material in recipe["materials"]:
+            if "#" in material["name"]:
+                material["version"] = material["name"].split("#")[1]
+                material["name"] = material["name"].split("#")[0]
+
+        if "#" in recipe["output"]["name"]:
+            recipe["output"]["version"] = recipe["output"]["name"].split("#")[1]
+            recipe["output"]["name"] = recipe["output"]["name"].split("#")[0]
+
+
     with open(output_dir + name, "w+") as fi:
         json.dump(item_production, fi, indent=2, sort_keys=True)
 
@@ -75,8 +86,14 @@ def get_shop_items():
                     if store_line_data["smw"].lower() == "no":
                         continue
 
+                version = ""
+
+                if "smwname" in store_line_data and "#" in store_line_data["smwname"]:
+                    version = store_line_data["smwname"].split("#")[1]
+
                 shop_item = {
                     "name": store_line_data["name"],
+                    "version": version,
                     "stock": store_line_data["stock"],
                     "currency": store_table_data["currency"] if "currency" in store_table_data else "Coins"
                 }
@@ -207,6 +224,7 @@ def get_item_info():
                 obj = {
                     "name": base["name"],
                     "group": name,
+                    "version": base["version"] if "version" in base else "",
                     "isMembers": True if base["members"] == "Yes" else False,
                     "isTradeable": True if base["tradeable"] == "Yes" else False,
                     "examineText": base["examine"] if "examine" in base else "",

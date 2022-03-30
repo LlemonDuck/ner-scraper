@@ -94,7 +94,7 @@ def query_category(category_name: str) -> dict[str, dict[str, str]]:
     return pages
 
 
-def ask_category_production(category_name: str) -> List[str]:
+def ask_category_production(category_name: str) -> List[object]:
     """
     query_category_production returns a list of all Production JSON
     properties in a given category
