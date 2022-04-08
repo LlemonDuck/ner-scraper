@@ -3,6 +3,7 @@ import json
 import os
 import re
 import traceback
+from operator import itemgetter
 from typing import Dict
 
 import api
@@ -20,6 +21,7 @@ def get_production():
     min_name = "items-production.min.json"
 
     for recipe in item_production:
+        recipe["output"].pop("cost")
         for material in recipe["materials"]:
             if "#" in material["name"]:
                 material["version"] = material["name"].split("#")[1]
@@ -29,12 +31,13 @@ def get_production():
             recipe["output"]["version"] = recipe["output"]["name"].split("#")[1]
             recipe["output"]["name"] = recipe["output"]["name"].split("#")[0]
 
+    sorted_production = sorted(item_production, key=lambda x: x["output"]["name"])
 
     with open(output_dir + name, "w+") as fi:
-        json.dump(item_production, fi, indent=2, sort_keys=True)
+        json.dump(sorted_production, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_production, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(sorted_production, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_shop_items():
@@ -103,11 +106,13 @@ def get_shop_items():
                     shop_item["buyPrice"] = store_line_data["buy"]
                 items.append(shop_item)
 
+            sorted_items = sorted(items, key=itemgetter("name"))
+
             shop_info = {
                 "name": name,
                 "location": format_location(infobox_data["location"]) if "location" in infobox_data else "",
                 "isMembers": True if ("members" in infobox_data and infobox_data["members"] == "Yes") else False,
-                "items": items
+                "items": sorted_items
             }
             if "sellmultiplier" in store_table_data:
                 shop_info["sellMultiplier"] = store_table_data["sellmultiplier"]
@@ -122,11 +127,13 @@ def get_shop_items():
             print("Item {} failed:".format(name))
             traceback.print_exc()
 
+    sorted_shops = sorted(shop_items, key=itemgetter("name"))
+
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(shop_items, fi, indent=2, sort_keys=True)
+        json.dump(sorted_shops, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(shop_items, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(sorted_shops, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_spawns():
@@ -146,10 +153,8 @@ def get_item_spawns():
             raw_page_spawns = code.filter_templates(matches=lambda t: t.name.matches("ItemSpawnLine"))
             if len(raw_page_spawns) < 1:
                 continue
-            page_spawns = {
-                "group": name,
-                "spawns": []
-            }
+
+            spawns = []
             for raw_page_spawn in raw_page_spawns:
                 base: Dict[str, str] = {}
                 for param in raw_page_spawn.params:
@@ -170,7 +175,12 @@ def get_item_spawns():
                     "isMembers": True if base["members"] == "Yes" else False,
                     "coords": coords
                 }
-                page_spawns["spawns"].append(page_spawn)
+                spawns.append(page_spawn)
+
+            page_spawns = {
+                "group": name,
+                "spawns": sorted(spawns, key=itemgetter("location"))
+            }
 
             item_spawns.append(page_spawns)
 
@@ -180,11 +190,13 @@ def get_item_spawns():
             print("Item {} failed:".format(name))
             traceback.print_exc()
 
+    sorted_spawns = sorted(item_spawns, key=itemgetter("group"))
+
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_spawns, fi, indent=2, sort_keys=True)
+        json.dump(sorted_spawns, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_spawns, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(sorted_spawns, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_info():
@@ -240,11 +252,13 @@ def get_item_info():
             print("Item {} failed:".format(name))
             traceback.print_exc()
 
+    sorted_info = sorted(item_info, key=itemgetter("itemID"))
+
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_info, fi, indent=2, sort_keys=True)
+        json.dump(sorted_info, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_info, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(sorted_info, fi, separators=(",", ":"), sort_keys=True)
 
 
 def get_item_drops():
@@ -283,11 +297,13 @@ def get_item_drops():
 
         item_drops.append(drop_object)
 
+    sorted_drops = sorted(item_drops, key=itemgetter("name"))
+
     with open(output_dir + file_name, "w+") as fi:
-        json.dump(item_drops, fi, indent=2, sort_keys=True)
+        json.dump(sorted_drops, fi, indent=2, sort_keys=True)
 
     with open(output_dir + min_name, "w+") as fi:
-        json.dump(item_drops, fi, separators=(",", ":"), sort_keys=True)
+        json.dump(sorted_drops, fi, separators=(",", ":"), sort_keys=True)
 
 
 def generate_hashes():
