@@ -205,6 +205,8 @@ def get_item_info():
     file_name = "items-info.json"
     min_name = "items-info.min.json"
 
+    regex = r"\{\{.*?\}\}"
+
     item_info = []
     for name, obj in item_pages.items():
         page = obj["page"]
@@ -239,7 +241,7 @@ def get_item_info():
                     "version": base["version"] if "version" in base else "",
                     "isMembers": True if base["members"] == "Yes" else False,
                     "isTradeable": True if base["tradeable"] == "Yes" else False,
-                    "examineText": base["examine"] if "examine" in base else "",
+                    "examineText": re.sub(regex, "", base["examine"]) if "examine" in base and "Clue scroll" not in base["name"] else "",
                     "itemID": item_id,
                     "url": url
                 }
@@ -272,11 +274,7 @@ def get_item_drops():
         if len(results["results"]) < 1:
             continue
 
-        drop_object = {
-            "name": name,
-            "dropSources": []
-        }
-
+        drop_sources = []
         try:
             for result in results["results"]:
                 result_object = {
@@ -287,13 +285,20 @@ def get_item_drops():
                     "dropLevel": result["Drop level"] if "Drop level" in result else "",
                     "dropType": result["Drop type"] if "Drop type" in result else ""
                 }
-                drop_object["dropSources"].append(result_object)
+
+                if result_object not in drop_sources:
+                    drop_sources.append(result_object)
 
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
             print("Item {} failed:".format(name))
             traceback.print_exc()
+
+        drop_object = {
+            "name": name,
+            "dropSources": drop_sources
+        }
 
         item_drops.append(drop_object)
 
