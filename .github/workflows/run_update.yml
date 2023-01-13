@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     - name: Install dependencies
@@ -52,8 +52,8 @@ jobs:
         mv output/items-spawns.min.json.bak output/items-spawns.min.json
     - name: Get current date
       id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-    - uses: peter-evans/create-pull-request@v3
+      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+    - uses: peter-evans/create-pull-request@v5-rc
       with:
         token: ${{ secrets.PAT }}
         add-paths: |
