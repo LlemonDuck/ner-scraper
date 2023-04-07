@@ -53,7 +53,7 @@ jobs:
     - name: Get current date
       id: date
       run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-    - uses: peter-evans/create-pull-request@v5-rc
+    - uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.PAT }}
         add-paths: |
