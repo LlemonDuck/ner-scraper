@@ -72,7 +72,6 @@ jobs:
         base: wiki-data
         title: Wiki scrape data ${{ steps.date.outputs.date }}
         commit-message: Wiki scrape data ${{ steps.date.outputs.date }}
-        reviewers: Hannah-GBS
         delete-branch: true
     - name: Display output PR
       if: ${{ steps.cpr.outputs.pull-request-number }}
